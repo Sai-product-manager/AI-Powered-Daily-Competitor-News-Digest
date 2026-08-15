@@ -1,0 +1,75 @@
+{
+  "Notion": {
+    "status": "ok",
+    "totalResults": 2,
+    "articles": [
+      {
+        "title": "Notion rolls out AI-powered meeting notes for Business plans",
+        "description": "Notion launched a new AI feature that automatically generates meeting notes and action items inside docs, available first to Business and Enterprise customers.",
+        "url": "https://example.com/notion-ai-notes",
+        "source": { "name": "TechCrunch" },
+        "publishedAt": "2026-08-14T09:12:00Z"
+      },
+      {
+        "title": "Notion launches global brand campaign 'Connected Workspace'",
+        "description": "Notion kicked off a new global ad campaign positioning itself as the connected workspace for modern teams, its first major marketing push in two years.",
+        "url": "https://example.com/notion-campaign",
+        "source": { "name": "AdAge" },
+        "publishedAt": "2026-08-14T14:40:00Z"
+      }
+    ]
+  },
+  "Linear": {
+    "status": "ok",
+    "totalResults": 2,
+    "articles": [
+      {
+        "title": "Linear raises new growth round to expand enterprise roadmap",
+        "description": "Linear closed a new funding round aimed at expanding its enterprise feature set and growing its international go-to-market team.",
+        "url": "https://example.com/linear-funding",
+        "source": { "name": "TechCrunch" },
+        "publishedAt": "2026-08-14T08:05:00Z"
+      },
+      {
+        "title": "Linear ships customer requests triage view",
+        "description": "Linear released a new triage view that helps product teams turn incoming customer feedback into prioritized backlog items faster.",
+        "url": "https://example.com/linear-triage",
+        "source": { "name": "The Verge" },
+        "publishedAt": "2026-08-14T11:22:00Z"
+      }
+    ]
+  },
+  "Asana": {
+    "status": "ok",
+    "totalResults": 1,
+    "articles": [
+      {
+        "title": "Asana appoints new VP of Product to lead AI initiatives",
+        "description": "Asana named a new VP of Product tasked with accelerating its AI-assisted work management features, signaling a stronger push into AI this year.",
+        "url": "https://example.com/asana-vp",
+        "source": { "name": "Reuters" },
+        "publishedAt": "2026-08-14T07:50:00Z"
+      }
+    ]
+  },
+  "ClickUp": {
+    "status": "ok",
+    "totalResults": 2,
+    "articles": [
+      {
+        "title": "ClickUp partners with Zoom for native meeting integration",
+        "description": "ClickUp announced a native Zoom integration letting users start and log meetings directly from tasks without switching apps.",
+        "url": "https://example.com/clickup-zoom",
+        "source": { "name": "Business Insider" },
+        "publishedAt": "2026-08-14T10:15:00Z"
+      },
+      {
+        "title": "ClickUp mentioned in roundup of productivity apps for students",
+        "description": "A general listicle briefly mentions ClickUp among ten productivity apps recommended for college students returning to school.",
+        "url": "https://example.com/clickup-listicle",
+        "source": { "name": "CollegeBlog" },
+        "publishedAt": "2026-08-14T06:00:00Z"
+      }
+    ]
+  }
+}

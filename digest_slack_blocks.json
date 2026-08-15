@@ -1,0 +1,91 @@
+[
+  {
+    "type": "header",
+    "text": {
+      "type": "plain_text",
+      "text": "\ud83d\uddde\ufe0f Competitor Digest \u2014 2026-08-15"
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Notion*"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "\u2022 *[Product Launch]* <https://example.com/notion-ai-notes|Notion rolls out AI-powered meeting notes for Business plans>\nNotion launched a new AI feature that automatically generates meeting notes and action items inside docs, available first to Business and Enterprise customers."
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "\u2022 *[Marketing]* <https://example.com/notion-campaign|Notion launches global brand campaign 'Connected Workspace'>\nNotion kicked off a new global ad campaign positioning itself as the connected workspace for modern teams, its first major marketing push in two years."
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Linear*"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "\u2022 *[Funding]* <https://example.com/linear-funding|Linear raises new growth round to expand enterprise roadmap>\nLinear closed a new funding round aimed at expanding its enterprise feature set and growing its international go-to-market team."
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "\u2022 *[Product Launch]* <https://example.com/linear-triage|Linear ships customer requests triage view>\nLinear released a new triage view that helps product teams turn incoming customer feedback into prioritized backlog items faster."
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Asana*"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "\u2022 *[Hiring/Leadership]* <https://example.com/asana-vp|Asana appoints new VP of Product to lead AI initiatives>\nAsana named a new VP of Product tasked with accelerating its AI-assisted work management features, signaling a stronger push into AI this year."
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*ClickUp*"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "\u2022 *[Partnership]* <https://example.com/clickup-zoom|ClickUp partners with Zoom for native meeting integration>\nClickUp announced a native Zoom integration letting users start and log meetings directly from tasks without switching apps."
+    }
+  }
+]

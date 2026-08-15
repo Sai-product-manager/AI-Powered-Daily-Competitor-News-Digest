@@ -1,0 +1,51 @@
+==============================================================================
+EXECUTION TRACE — Competitor News Digest workflow logic
+Run timestamp (UTC): 2026-08-15T02:44:18.523370+00:00Z
+==============================================================================
+
+[Step 1] Loaded 4 active competitors from Competitors_sheet.csv:
+    - Notion  (query: "Notion app")
+    - Linear  (query: "Linear.app")
+    - Asana  (query: "Asana software")
+    - ClickUp  (query: "ClickUp software")
+
+[Step 2] Fetched mock NewsAPI responses for 4 competitors, 7 raw articles total.
+
+[Step 3] Extract & Flatten Articles -> 7 unique articles after dedupe/cap:
+    - [Notion] Notion rolls out AI-powered meeting notes for Business plans
+    - [Notion] Notion launches global brand campaign 'Connected Workspace'
+    - [Linear] Linear raises new growth round to expand enterprise roadmap
+    - [Linear] Linear ships customer requests triage view
+    - [Asana] Asana appoints new VP of Product to lead AI initiatives
+    - [ClickUp] ClickUp partners with Zoom for native meeting integration
+    - [ClickUp] ClickUp mentioned in roundup of productivity apps for students
+
+[Step 4] AI Summarize & Categorize (mocked model call) -> 7 articles scored:
+    - [Notion  ] cat=Product Launch   rel=8  "Notion rolls out AI-powered meeting notes ..."
+    - [Notion  ] cat=Marketing        rel=6  "Notion launches global brand campaign 'Con..."
+    - [Linear  ] cat=Funding          rel=8  "Linear raises new growth round to expand e..."
+    - [Linear  ] cat=Product Launch   rel=8  "Linear ships customer requests triage view"
+    - [Asana   ] cat=Hiring/Leadership rel=8  "Asana appoints new VP of Product to lead A..."
+    - [ClickUp ] cat=Partnership      rel=8  "ClickUp partners with Zoom for native meet..."
+    - [ClickUp ] cat=Other            rel=3  "ClickUp mentioned in roundup of productivi..."
+
+[Step 5] Filter Low-Relevance News (threshold >= 6) -> kept 6, dropped 1:
+    - [KEPT   ] (8/10) Notion rolls out AI-powered meeting notes for Busine...
+    - [KEPT   ] (6/10) Notion launches global brand campaign 'Connected Wor...
+    - [KEPT   ] (8/10) Linear raises new growth round to expand enterprise ...
+    - [KEPT   ] (8/10) Linear ships customer requests triage view
+    - [KEPT   ] (8/10) Asana appoints new VP of Product to lead AI initiatives
+    - [KEPT   ] (8/10) ClickUp partners with Zoom for native meeting integr...
+    - [DROPPED] (3/10) ClickUp mentioned in roundup of productivity apps fo...
+
+[Step 6] Build Daily Digest -> 6 articles across 4 competitors.
+
+[Step 7] Wrote outputs:
+    - digest_slack_blocks.json  (payload for Slack chat.postMessage)
+    - digest_email.html         (payload for Email Send node)
+
+[Note] Delivery nodes (Slack API call, SMTP send) and the live
+NewsAPI/OpenAI HTTP calls were not exercised in this sandbox (no
+live credentials here) - only the transformation logic was run,
+using the exact functions ported from the n8n Code nodes.
+==============================================================================
