@@ -1,0 +1,633 @@
+{
+  "name": "Competitor News Digest (Daily 8AM + Weekly Friday Rollup) copy",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "9d3e296c-84e2-48e3-a440-f5c7ca1a9c6c",
+      "name": "Daily Trigger (8:00 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KMBpOeLTS6_Lju2AYfGZP7nU7JiwtIWcFcMV6QBomIQ",
+          "mode": "list",
+          "cachedResultName": "100 + Companies Hiring in Gurgaon -  Fresherscareer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KMBpOeLTS6_Lju2AYfGZP7nU7JiwtIWcFcMV6QBomIQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Competitors"
+        },
+        "options": {}
+      },
+      "id": "1d4814e3-128f-41bc-a709-77bf1f91344e",
+      "name": "Get Competitors (Google Sheets)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GMiGSVcSNr38hBhx",
+          "name": "Google Sheets account 275"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Keep only rows marked Active = TRUE, and compute the search window (last 24h)\nconst fromDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);\n\nreturn items\n  .filter(i => String(i.json.Active).toUpperCase() === 'TRUE')\n  .map(i => ({\n    json: {\n      competitor: i.json.Name,\n      query: i.json.SearchQuery || i.json.Name,\n      fromDate\n    }\n  }));"
+      },
+      "id": "9c5a8d84-4fd0-4b26-96a9-14488cfa4b2f",
+      "name": "Filter Active + Build Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ $json.fromDate }}"
+            },
+            {
+              "name": "sortBy",
+              "value": "publishedAt"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            },
+            {
+              "name": "pageSize",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "13af5eb8-6f0d-48b3-ad42-986b7372e45e",
+      "name": "Fetch Competitor News (NewsAPI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        96
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "AkXan5lwQZa288kD",
+          "name": "Query Auth account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten each competitor's article list into individual items, cap 5 most recent per competitor, dedupe by URL across the whole run.\nconst seen = new Set();\nconst out = [];\n\nfor (const item of items) {\n  const competitor = item.json.query ? item.json.query : (item.json?.competitor || 'Unknown');\n  const articles = (item.json.articles || []).slice(0, 5);\n  for (const a of articles) {\n    if (!a.url || seen.has(a.url)) continue;\n    seen.add(a.url);\n    out.push({\n      json: {\n        competitor,\n        title: a.title,\n        description: a.description || '',\n        url: a.url,\n        source: a.source?.name || 'Unknown',\n        publishedAt: a.publishedAt\n      }\n    });\n  }\n}\nreturn out;"
+      },
+      "id": "2b3bc44d-07fc-40dd-9892-f25c8a4a3056",
+      "name": "Extract & Flatten Articles",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "OPTIONS",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1efc2b59-927c-475d-9542-2bbe4f2dcc7a",
+      "name": "AI Summarize & Categorize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1120,
+        96
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "Hg4aObsAnXohgI8B",
+          "name": "OpenAI account 71"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the AI's JSON reply and re-attach the original article fields (the HTTP node\n// replaces item JSON with only the API response, so we pull originals by index).\nconst originals = $('Extract & Flatten Articles').all();\nconst out = [];\nfor (let idx = 0; idx < items.length; idx++) {\n  const item = items[idx];\n  const original = (originals[idx] && originals[idx].json) ? originals[idx].json : {};\n  let parsed = { summary: original.description || 'No summary available.', category: 'Other', relevance_score: 5 };\n  try {\n    const raw = item.json.choices?.[0]?.message?.content || '{}';\n    const cleaned = raw.trim().replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '');\n    parsed = JSON.parse(cleaned);\n  } catch (e) {\n    // keep fallback\n  }\n  out.push({\n    json: {\n      competitor: original.competitor,\n      title: original.title,\n      description: original.description,\n      url: original.url,\n      source: original.source,\n      publishedAt: original.publishedAt,\n      summary: parsed.summary,\n      category: parsed.category,\n      relevance_score: Number(parsed.relevance_score) || 5\n    }\n  });\n}\nreturn out;"
+      },
+      "id": "68c322cb-fbd0-4c3f-bfcc-957232b69915",
+      "name": "Parse AI Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Drop low-relevance noise (e.g. score < 6)\nconst MIN_RELEVANCE = 6;\nreturn items.filter(i => (i.json.relevance_score || 0) >= MIN_RELEVANCE);"
+      },
+      "id": "f8b9a662-f0e0-41c4-8aa0-591bbfd23246",
+      "name": "Filter Low-Relevance News",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "options": {}
+      },
+      "id": "fc40b763-869e-4b92-89e4-e44fc6f7ae72",
+      "name": "Log to History Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1792,
+        0
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GMiGSVcSNr38hBhx",
+          "name": "Google Sheets account 275"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate all filtered articles into ONE digest item: group by competitor, build Slack Block Kit + HTML email body.\nconst byCompetitor = {};\nfor (const item of items) {\n  const c = item.json.competitor;\n  byCompetitor[c] = byCompetitor[c] || [];\n  byCompetitor[c].push(item.json);\n}\n\nconst today = new Date().toISOString().slice(0, 10);\nlet slackBlocks = [\n  { type: 'header', text: { type: 'plain_text', text: '🗞️ Competitor Digest — ' + today } }\n];\nlet html = '<h2>Competitor News Digest — ' + today + '</h2>';\n\nconst competitors = Object.keys(byCompetitor);\nif (competitors.length === 0) {\n  slackBlocks.push({ type: 'section', text: { type: 'mrkdwn', text: 'No relevant competitor news today.' } });\n  html += '<p>No relevant competitor news today.</p>';\n} else {\n  for (const c of competitors) {\n    slackBlocks.push({ type: 'divider' });\n    slackBlocks.push({ type: 'section', text: { type: 'mrkdwn', text: '*' + c + '*' } });\n    html += '<h3>' + c + '</h3><ul>';\n    for (const a of byCompetitor[c]) {\n      slackBlocks.push({\n        type: 'section',\n        text: { type: 'mrkdwn', text: '• *[' + a.category + ']* <' + a.url + '|' + a.title + '>\\n' + a.summary }\n      });\n      html += '<li><b>[' + a.category + ']</b> <a href=\"' + a.url + '\">' + a.title + '</a><br>' + a.summary + '</li>';\n    }\n    html += '</ul>';\n  }\n}\n\nreturn [{ json: { slackBlocks, htmlBody: html, date: today, articleCount: items.length } }];"
+      },
+      "id": "4d8b8453-cee3-41e2-b501-651c8eabbc76",
+      "name": "Build Daily Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "Select digest channel"
+        },
+        "messageType": "block",
+        "blocksUi": "={{ JSON.stringify($json.slackBlocks) }}",
+        "otherOptions": {}
+      },
+      "id": "8fca0ed6-5859-4625-a595-31f919252528",
+      "name": "Send Slack Digest",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        2016,
+        96
+      ],
+      "webhookId": "458ca261-c6cb-45b9-864b-463d213acb60"
+    },
+    {
+      "parameters": {
+        "fromEmail": "<__PLACEHOLDER_VALUE__Digest sender email__>",
+        "toEmail": "<__PLACEHOLDER_VALUE__Digest recipient email(s)__>",
+        "subject": "=🗞️ Competitor News Digest — {{ $json.date }}",
+        "html": "={{ $json.htmlBody }}",
+        "options": {}
+      },
+      "id": "4df0bef9-af5f-479a-9e22-8a698d0e7181",
+      "name": "Send Email Digest",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2016,
+        288
+      ],
+      "webhookId": "c5801cc0-8c5a-4e8d-9093-bf9f703501c1",
+      "credentials": {
+        "smtp": {
+          "id": "1Nt4xqR44dEpZ30t",
+          "name": "SMTP account 28"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 5"
+            }
+          ]
+        }
+      },
+      "id": "e1b930e1-ded2-40ba-a4fa-497dea33e992",
+      "name": "Weekly Trigger (Friday 9AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10-sWaL38VYz--CqQNMQEwsG9xRBAx3nwOLRKzRD4BkY",
+          "mode": "list",
+          "cachedResultName": "Weekly Venture Capital Raised by Indian Startups - Last Six Months",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10-sWaL38VYz--CqQNMQEwsG9xRBAx3nwOLRKzRD4BkY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10-sWaL38VYz--CqQNMQEwsG9xRBAx3nwOLRKzRD4BkY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "338ffe70-5d21-49d1-a241-94f6f3a69892",
+      "name": "Read History (Google Sheets)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        608
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GMiGSVcSNr38hBhx",
+          "name": "Google Sheets account 275"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Keep only rows logged in the last 7 days\nconst sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;\nreturn items.filter(i => new Date(i.json.Date).getTime() >= sevenDaysAgo);"
+      },
+      "id": "bf9486b1-19f2-4bec-8d48-8cb74bacc1bf",
+      "name": "Filter Last 7 Days",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"gpt-4o-mini\", temperature: 0.3, messages: [{ role: \"system\", content: \"You are a product intelligence analyst. Given a week of competitor headlines (JSON array with competitor, category, headline, summary), write a short executive weekly rollup: top 3-5 trends across competitors, and one line per competitor on what mattered most. Respond in plain text suitable for Slack/email, no JSON.\" }, { role: \"user\", content: JSON.stringify($input.all().map(i => i.json)) }] }) }}",
+        "options": {}
+      },
+      "id": "3a2f70e4-1f9a-4ac1-8796-d8eac3b56dec",
+      "name": "AI Weekly Rollup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const summary = $json.choices?.[0]?.message?.content || 'No weekly summary available.';\nconst weekOf = new Date().toISOString().slice(0, 10);\nreturn [{ json: {\n  weekOf,\n  text: summary,\n  slackBlocks: [\n    { type: 'header', text: { type: 'plain_text', text: '📊 Weekly Competitor Rollup — week of ' + weekOf } },\n    { type: 'section', text: { type: 'mrkdwn', text: summary } }\n  ],\n  htmlBody: '<h2>Weekly Competitor Rollup — week of ' + weekOf + '</h2><pre>' + summary + '</pre>'\n} }];"
+      },
+      "id": "398ca50e-0c6e-41b4-8db3-d1b24733fc76",
+      "name": "Build Weekly Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "star",
+        "target": "message",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": ""
+        },
+        "options": {}
+      },
+      "id": "31dff668-e34d-4929-8422-cb221675d9ab",
+      "name": "Send Weekly Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1120,
+        512
+      ],
+      "webhookId": "edfa52a9-5d67-474f-84ca-4985843fe3a1",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "qR1GUWRFZpOGbrso",
+          "name": "Slack account 48"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "<__PLACEHOLDER_VALUE__Digest sender email__>",
+        "toEmail": "<__PLACEHOLDER_VALUE__Digest recipient email(s)__>",
+        "subject": "=📊 Weekly Competitor Rollup — week of {{ $json.weekOf }}",
+        "html": "={{ $json.htmlBody }}",
+        "options": {}
+      },
+      "id": "c97456fb-7b1b-454f-8c7f-ed418a7d4dd3",
+      "name": "Send Weekly Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        704
+      ],
+      "webhookId": "3374da8d-e6a3-4f07-bd3a-75f08d71471f",
+      "credentials": {
+        "smtp": {
+          "id": "1Nt4xqR44dEpZ30t",
+          "name": "SMTP account 28"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily Trigger (8:00 AM)": {
+      "main": [
+        [
+          {
+            "node": "Get Competitors (Google Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Competitors (Google Sheets)": {
+      "main": [
+        [
+          {
+            "node": "Filter Active + Build Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Active + Build Query": {
+      "main": [
+        [
+          {
+            "node": "Fetch Competitor News (NewsAPI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Competitor News (NewsAPI)": {
+      "main": [
+        [
+          {
+            "node": "Extract & Flatten Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Flatten Articles": {
+      "main": [
+        [
+          {
+            "node": "AI Summarize & Categorize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Summarize & Categorize": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Output": {
+      "main": [
+        [
+          {
+            "node": "Filter Low-Relevance News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Low-Relevance News": {
+      "main": [
+        [
+          {
+            "node": "Log to History Sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Daily Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Daily Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Digest",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Email Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weekly Trigger (Friday 9AM)": {
+      "main": [
+        [
+          {
+            "node": "Read History (Google Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read History (Google Sheets)": {
+      "main": [
+        [
+          {
+            "node": "Filter Last 7 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Last 7 Days": {
+      "main": [
+        [
+          {
+            "node": "AI Weekly Rollup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Weekly Rollup": {
+      "main": [
+        [
+          {
+            "node": "Build Weekly Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Weekly Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Weekly Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Weekly Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "d6789d09-ebe7-4b0f-9b66-812dbfeddc52",
+  "meta": {
+    "instanceId": "0db25aff814d9d346b0e6d897946122cfc12e064b6e58ff53ffd8c9cc948ff20"
+  },
+  "nodeGroups": [],
+  "id": "oTwLB9hBzYeOgXlQ",
+  "tags": [
+    {
+      "updatedAt": "2025-11-02T12:03:47.199Z",
+      "createdAt": "2025-11-02T12:03:47.199Z",
+      "id": "dON3GIe2bqvlY7rF",
+      "name": "AI Agent"
+    }
+  ]
+}
